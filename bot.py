@@ -12,7 +12,7 @@ async def on_message(message):
             with open("servers.json", "r") as f:
                 servers = json.load(f)
             if message.channel.server.id in servers:
-                await ctx.send_message(message.channel, 'Overwriting your previous configuration')
+                await ctx.send_message(message.channel, 'DEVELOPMENT ||| Overwriting your previous configuration')
             if len(message.content.split(" ")) < 3:
                 await ctx.send_message(message.channel, 'Invalid syntax, expected ``~config [channel_id] [alert_role_id]``, you can also use ``-1`` for the alerts role to alert no role.')
             else:
@@ -69,35 +69,56 @@ def check_diff(req):
         f.write(hash)
     return True
 
+def get_server_config():
+    with open("servers.json", "r") as f:
+        servers = json.load(f)
+    return servers
+
+def create_new_embed(build_num, build_id):
+    embed = discord.Embed(type="rich", color=0x7289DA)
+    embed.add_field(name="Build Number", value=build_num)
+    embed.add_field(name="Build ID", value=build_id)
+    embed.set_author(name="New Canary Build", url="https://img.adi.wtf/8x4R.jpg", icon_url="https://img.adi.wtf/8x4R.jpg")
+    return embed
+
+async def new_update_alert(role, server, channel, embed):
+    if channel == None or server == None:
+        return
+    if role == None:
+        await ctx.send_message(channel, embed=embed)
+        return
+    else:
+        await ctx.edit_role(server, role, mentionable=True)
+        await ctx.send_message(channel, f"<@&{role.id}>", embed=embed)
+        await ctx.edit_role(server, role, mentionable=False)
 
 async def push_canary_update():
     await ctx.wait_until_ready()
     while True:
         req = r.get("http://localhost:1337/discord/canary/builds/latest").json()
         if check_diff(req) == True:
-            embed = discord.Embed(type="rich", color=0x7289DA)
-            embed.add_field(name="Build Number", value=req['build_num'])
-            embed.add_field(name="Build ID", value=req['build_id'])
-            embed.set_author(name="New Canary Build", url="https://img.adityadiwakar.me/u/8x4R.jpg",
-                             icon_url="https://img.adityadiwakar.me/8x4R.jpg")
-            with open("servers.json", "r") as f:
-                servers = json.load(f)
-            for x in ctx.servers:
-                if x.id in servers:
-                    config = servers[x.id]
+            
+            update_embed = create_new_embed(req['build_num'], req['build_id'])       
+            servers_to_ping = get_server_config()
+
+            for client_server in ctx.servers:
+                if client_server.id in servers_to_ping:
+                    config = servers_to_ping[client_server.id]
+
                     role = None
-                    for y in x.roles:
-                        if y.id == config['role']:
-                            role = y
+                    for server_role in client_server.roles:
+                        if server_role.id == config['role']:
+                            role = server_role
                             break
+
                     channel = None
-                    for z in x.channels:
-                        if z.id == config['channel']:
-                            channel = z
+                    for server_channel in client_server.channels:
+                        if server_channel.id == config['channel']:
+                            channel = server_channel
                             break
-                    await ctx.edit_role(x, y, mentionable=True)
-                    await ctx.send_message(z, f"<@&{role.id}>", embed=embed)
-                    await ctx.edit_role(x, y, mentionable=False)
+
+                    await new_update_alert(role, client_server, channel, update_embed)
+
         await asyncio.sleep(4)
 
 
