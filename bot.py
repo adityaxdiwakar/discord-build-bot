@@ -117,7 +117,10 @@ async def push_canary_update():
                             channel = server_channel
                             break
 
-                    await new_update_alert(role, client_server, channel, update_embed)
+                    try:
+                        await new_update_alert(role, client_server, channel, update_embed)
+                    except:
+                        pass
 
         await asyncio.sleep(4)
 
