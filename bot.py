@@ -12,7 +12,7 @@ async def on_message(message):
             with open("servers.json", "r") as f:
                 servers = json.load(f)
             if message.channel.server.id in servers:
-                await ctx.send_message(message.channel, 'DEVELOPMENT ||| Overwriting your previous configuration')
+                await ctx.send_message(message.channel, 'Overwriting your previous configuration')
             if len(message.content.split(" ")) < 3:
                 await ctx.send_message(message.channel, 'Invalid syntax, expected ``~config [channel_id] [alert_role_id]``, you can also use ``-1`` for the alerts role to alert no role.')
             else:
