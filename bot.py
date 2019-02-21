@@ -47,7 +47,6 @@ async def update_config(message):
 @ctx.event
 async def on_message(message):
     if message.content.startswith("~config"):
-        await ctx.send_message(message.channel, "IM ALIVE")
         if message.channel.server.owner.id == message.author.id:
             servers = get_server_config()
             if message.channel.server.id in servers:
@@ -55,7 +54,7 @@ async def on_message(message):
             if len(message.content.split(" ")) < 3:
                 await ctx.send_message(message.channel, 'Invalid syntax, expected ``~config [channel_id] [alert_role_id]``, you can also use ``-1`` for the alerts role to alert no role.')
             else:
-                await update_config()
+                await update_config(message)
         else:
             await ctx.send_message(message.channel, "🔒 You do not have permission to do that!")
     elif re.search("~(?:canary|ptb|stable)", message.content.lower()):
