@@ -33,6 +33,7 @@ def create_asked_embed(platform):
 
 
 async def update_config(message):
+    servers = get_server_config()
     args = message.content.split(" ")[1:]
     channel = args[0]
     role = args[1]
