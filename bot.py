@@ -47,6 +47,7 @@ async def update_config(message):
 @ctx.event
 async def on_message(message):
     if message.content.startswith("~config"):
+        await ctx.send_message(message.channel, "IM ALIVE")
         if message.channel.server.owner.id == message.author.id:
             servers = get_server_config()
             if message.channel.server.id in servers:
