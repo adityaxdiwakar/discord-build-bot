@@ -100,8 +100,10 @@ async def new_update_alert(role, server, channel, embed):
             await ctx.edit_role(server, role, mentionable=True)
             await ctx.send_message(channel, f"<@&{role.id}>", embed=embed)
             await ctx.edit_role(server, role, mentionable=False)
+            return
         except:
             print(f"Error occured on {server.name} in {channel.name}")
+            return
 
 async def push_canary_update():
     await ctx.wait_until_ready()
